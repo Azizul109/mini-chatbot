@@ -21,7 +21,9 @@ mysql -u root -p
 ## Test Code
 
 # Check if workspace exists:
-```query {
+
+```
+query {
   workspace(id: "workspace-1") {
     id
     name
@@ -34,7 +36,9 @@ mysql -u root -p
 }```
 
 # Check if bot exists:
-```query {
+
+```
+query {
   bot(id: "bot-1") {
     id
     name
@@ -44,7 +48,9 @@ mysql -u root -p
 }```
 
 # Ingest sample documents:
-```mutation {
+
+```
+mutation {
   ingestDocuments(
     botId: "bot-1"
     input: [
@@ -92,7 +98,9 @@ mysql -u root -p
 }```
 
 # Create a chat session:
-```mutation {
+
+```
+mutation {
   createSession(botId: "bot-1") {
     id
     botId
@@ -102,7 +110,9 @@ mysql -u root -p
 }```
 
 # Create a chat session:
-```mutation {
+
+```
+mutation {
   createSession(botId: "bot-1") {
     id
     botId
@@ -112,7 +122,9 @@ mysql -u root -p
 }```
 
 # Sample question:
-```mutation {
+
+```
+mutation {
   chat(input: {
     sessionId: "cmhkyfjov0001sfa8jqxyq28v",
     message: "What is your customer service number?",
