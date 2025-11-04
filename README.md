@@ -20,9 +20,10 @@ mysql -u root -p
 
 ## Test Code
 
+
+```bash
 # Check if workspace exists:
 
-```
 query {
   workspace(id: "workspace-1") {
     id
@@ -33,11 +34,13 @@ query {
       modelProvider
     }
   }
-}```
+}
+```
 
+
+```bash
 # Check if bot exists:
 
-```
 query {
   bot(id: "bot-1") {
     id
@@ -45,11 +48,13 @@ query {
     modelProvider
     modelName
   }
-}```
+}
+```
 
+
+```bash
 # Ingest sample documents:
 
-```
 mutation {
   ingestDocuments(
     botId: "bot-1"
@@ -95,11 +100,13 @@ mutation {
     upsertedEmbeddings
     documents
   }
-}```
+}
+```
 
+
+```bash
 # Create a chat session:
 
-```
 mutation {
   createSession(botId: "bot-1") {
     id
@@ -107,11 +114,13 @@ mutation {
     userId
     createdAt
   }
-}```
+}
+```
 
+
+```bash
 # Create a chat session:
 
-```
 mutation {
   createSession(botId: "bot-1") {
     id
@@ -119,11 +128,13 @@ mutation {
     userId
     createdAt
   }
-}```
+}
+```
 
+
+```bash
 # Sample question:
 
-```
 mutation {
   chat(input: {
     sessionId: "cmhkyfjov0001sfa8jqxyq28v",
@@ -137,4 +148,5 @@ mutation {
       score
     }
   }
-}```
+}
+```
