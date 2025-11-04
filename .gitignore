@@ -47,3 +47,4 @@ coverage/
 
 # Misc
 *.tsbuildinfo
+nestjs-graphql-gateway/.env.local

@@ -1,0 +1,114 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Workspace {
+  id: ID!
+  name: String!
+  createdAt: String!
+  updatedAt: String!
+  bots: [Bot!]!
+}
+
+type Bot {
+  id: ID!
+  workspaceId: ID!
+  name: String!
+  modelProvider: String!
+  modelName: String!
+  temperature: Float
+  createdAt: String!
+  updatedAt: String!
+  documents: [Document!]!
+  sessions: [ChatSession!]!
+}
+
+type Document {
+  id: ID!
+  botId: ID!
+  filename: String!
+  mimeType: String
+  status: String!
+  chunkCount: Float!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type ChatSession {
+  id: ID!
+  botId: ID!
+  userId: String
+  createdAt: String!
+  updatedAt: String!
+  messages: [Message!]!
+}
+
+type Message {
+  id: ID!
+  sessionId: ID!
+  role: String!
+  content: String!
+  tokensUsed: Float
+  createdAt: String!
+}
+
+type Citation {
+  documentId: ID!
+  filename: String!
+  score: Float!
+}
+
+type ChatResult {
+  answer: String!
+  citations: [Citation!]!
+  tokensUsed: Float!
+}
+
+type MessageConnection {
+  edges: [Message!]!
+  nextCursor: String
+}
+
+type IngestResult {
+  botId: ID!
+  upsertedEmbeddings: Float!
+  documents: Float!
+}
+
+type Query {
+  workspace(id: String!): Workspace
+  bot(id: String!): Bot
+  session(id: String!): ChatSession
+  messages(sessionId: String!, limit: Float, cursor: String): MessageConnection!
+  health: String!
+}
+
+type Mutation {
+  createBot(input: CreateBotInput!): Bot!
+  ingestDocuments(botId: String!, input: [DocumentInput!]!, chunkSize: Float, overlap: Float): IngestResult!
+  createSession(botId: String!, userId: String): ChatSession!
+  chat(input: ChatInput!): ChatResult!
+}
+
+input CreateBotInput {
+  workspaceId: ID!
+  name: String!
+  modelProvider: String!
+  modelName: String!
+  temperature: Float
+}
+
+input DocumentInput {
+  filename: String!
+  text: String!
+}
+
+input ChatInput {
+  sessionId: ID!
+  message: String!
+  topK: Float
+}
+
+type Subscription {
+  chatStream(sessionId: String!): String!
+}
