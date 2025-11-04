@@ -1,0 +1,49 @@
+# ========================================
+# Common Python (FastAPI)
+# ========================================
+fastapi-ingestion/venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ========================================
+# Common Node / NestJS
+# ========================================
+# Dependencies
+nestjs-graphql-gateway/node_modules/
+nestjs-graphql-gateway/src/
+
+
+# Build output
+dist/
+build/
+
+# Environment files
+.env
+.env.*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Optional lockfiles (if you want to keep only one)
+# yarn.lock
+# package-lock.json
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Misc
+*.tsbuildinfo
