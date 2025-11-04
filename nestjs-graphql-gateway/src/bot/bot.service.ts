@@ -1,4 +1,3 @@
-// src/bot/bot.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -27,9 +26,7 @@ export class BotService {
   }
 
   async updateDocumentStatus(botId: string, documents: any[], status: string) {
-    // Implementation for updating document status
     console.log(`Updating document status for bot ${botId} to ${status}`);
-    // You can implement actual database updates here
     return Promise.resolve();
   }
 }

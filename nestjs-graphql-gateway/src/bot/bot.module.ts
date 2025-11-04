@@ -1,4 +1,3 @@
-// src/bot/bot.module.ts
 import { Module } from '@nestjs/common';
 import { BotResolver } from './bot.resolver';
 import { BotService } from './bot.service';

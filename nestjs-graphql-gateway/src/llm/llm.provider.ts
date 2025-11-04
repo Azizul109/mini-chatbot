@@ -1,4 +1,3 @@
-// src/llm/llm.provider.ts
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
@@ -17,7 +16,6 @@ export class OpenAIProvider implements LLMProvider {
   private openai: any;
 
   constructor(private configService: ConfigService) {
-    // Keep this for future use when OpenAI quota is resolved
   }
 
   async generateCompletion(messages: any[], temperature = 0.3): Promise<LLMResponse> {
@@ -32,7 +30,6 @@ export class MockLLMProvider implements LLMProvider {
   private generateContextAwareResponse(userMessage: string, systemPrompt: string): string {
     const lowerMessage = userMessage.toLowerCase();
     
-    // Extract context from system prompt to make responses more relevant
     const hasShippingInfo = systemPrompt.includes('shipping') || 
                            systemPrompt.includes('delivery') || 
                            systemPrompt.includes('ship');
@@ -44,7 +41,6 @@ export class MockLLMProvider implements LLMProvider {
                           systemPrompt.includes('email') ||
                           systemPrompt.includes('support');
 
-    // Shipping-related queries
     if (lowerMessage.includes('shipping') || lowerMessage.includes('delivery') || hasShippingInfo) {
       if (lowerMessage.includes('cost') || lowerMessage.includes('price') || lowerMessage.includes('how much')) {
         return "Based on our shipping policy: Standard shipping is free on orders over $50, otherwise it's $4.99. Express shipping costs $9.99, and overnight shipping is $19.99.";
@@ -58,7 +54,6 @@ export class MockLLMProvider implements LLMProvider {
       return "We offer several shipping options: Standard (3-5 days), Express (1-2 days), and Overnight (next day). Free shipping is available on orders over $50.";
     }
 
-    // Return-related queries
     if (lowerMessage.includes('return') || lowerMessage.includes('refund') || hasReturnInfo) {
       if (lowerMessage.includes('how long') || lowerMessage.includes('time') || lowerMessage.includes('when')) {
         return "You can return items within 30 days of purchase. Refunds are typically processed within 5-7 business days after we receive your return.";
@@ -72,7 +67,6 @@ export class MockLLMProvider implements LLMProvider {
       return "Our return policy allows returns within 30 days of purchase. Items must be in original condition with tags attached. Refunds are processed within 5-7 business days.";
     }
 
-    // Contact-related queries
     if (lowerMessage.includes('contact') || lowerMessage.includes('phone') || lowerMessage.includes('email') || lowerMessage.includes('call') || hasContactInfo) {
       if (lowerMessage.includes('phone') || lowerMessage.includes('call') || lowerMessage.includes('number')) {
         return "You can reach our customer service team at 1-800-123-4567. Our phone lines are open Monday through Friday from 9 AM to 6 PM EST.";
@@ -86,7 +80,6 @@ export class MockLLMProvider implements LLMProvider {
       return "You can contact us by phone at 1-800-123-4567, by email at support@company.com, or through live chat on our website during business hours.";
     }
 
-    // Product and general queries
     if (lowerMessage.includes('product') || lowerMessage.includes('item')) {
       return "I'd be happy to help you with product information. Could you please specify which product you're asking about? Our knowledgeable staff can provide detailed specifications and availability.";
     }
@@ -99,14 +92,12 @@ export class MockLLMProvider implements LLMProvider {
       return "We accept all major credit cards (Visa, MasterCard, American Express, Discover), PayPal, and Apple Pay for your convenience.";
     }
 
-    // Default response that acknowledges the mock nature but tries to be helpful
     return `I understand you're asking about "${userMessage}". In a production environment with OpenAI GPT-4, I would provide a comprehensive answer based on our company knowledge base. For now, I recommend checking our website's help section or contacting customer service for detailed information about this topic.`;
   }
 
   async generateCompletion(messages: any[], temperature = 0.3): Promise<LLMResponse> {
     this.logger.log('Using enhanced mock LLM provider');
     
-    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 200));
     
     const userMessage = messages[messages.length - 1]?.content || '';

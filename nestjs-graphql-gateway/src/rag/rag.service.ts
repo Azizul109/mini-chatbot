@@ -1,4 +1,3 @@
-// src/rag/rag.service.ts
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { LLMProvider } from '../llm/llm.provider';
@@ -80,7 +79,6 @@ export class RAGService {
     
     this.logger.log(`Found ${relevantChunks.length} relevant chunks`);
 
-    // Build context from relevant chunks
     const context = relevantChunks
       .map((chunk: any) => `From ${chunk.filename}: ${chunk.content}`)
       .join('\n\n');

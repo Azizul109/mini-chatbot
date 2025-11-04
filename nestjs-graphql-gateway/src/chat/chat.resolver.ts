@@ -1,4 +1,3 @@
-// src/chat/chat.resolver.ts
 import { Resolver, Query, Mutation, Args, Subscription } from '@nestjs/graphql';
 import { ChatService } from './chat.service';
 import { RAGService } from '../rag/rag.service';
@@ -57,21 +56,18 @@ export class ChatResolver {
       throw new Error('Bot not found');
     }
 
-    // Get conversation history
     const messages = await this.chatService.getMessages(sessionId, 10);
     const conversationHistory = messages.map((msg) => ({
       role: msg.role,
       content: msg.content,
     }));
 
-    // Save user message
     await this.chatService.createMessage({
       sessionId,
       role: 'user',
       content: message,
     });
 
-    // Generate RAG response
     const result = await this.ragService.generateAnswer(
       bot.id,
       message,
@@ -80,7 +76,6 @@ export class ChatResolver {
       topK,
     );
 
-    // Save assistant message
     await this.chatService.createMessage({
       sessionId,
       role: 'assistant',

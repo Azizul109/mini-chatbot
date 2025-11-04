@@ -1,4 +1,3 @@
-// src/bot/bot.resolver.ts
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { BotService } from './bot.service';
 import { HttpService } from '@nestjs/axios';
@@ -47,7 +46,6 @@ export class BotResolver {
     try {
       const response = await this.httpService.axiosRef.post(ingestionUrl, payload);
       
-      // Update document status in database
       await this.botService.updateDocumentStatus(botId, input, 'completed');
       
       return response.data;

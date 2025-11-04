@@ -1,10 +1,8 @@
-// nestjs-graphql-gateway/prisma/seed.ts
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create workspace
   const workspace = await prisma.workspace.upsert({
     where: { id: 'workspace-1' },
     update: {},
@@ -14,7 +12,6 @@ async function main() {
     },
   });
 
-  // Create bot
   const bot = await prisma.bot.upsert({
     where: { id: 'bot-1' },
     update: {},

@@ -1,0 +1,111 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: chatbot-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: chatbot
+      MYSQL_USER: chatbot_user
+      MYSQL_PASSWORD: chatbot_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - chatbot-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # ChromaDB Vector Store
+  chroma:
+    image: chromadb/chroma:0.4.15
+    container_name: chatbot-chroma
+    ports:
+      - "8000:8000"
+    environment:
+      - IS_PERSISTENT=TRUE
+      - CHROMA_SERVER_HOST=0.0.0.0
+      - CHROMA_SERVER_HTTP_PORT=8000
+    volumes:
+      - chroma_data:/chroma/chroma
+    networks:
+      - chatbot-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      timeout: 10s
+      retries: 5
+
+  # FastAPI Ingestion Service
+  fastapi-ingestion:
+    build:
+      context: ./fastapi-ingestion
+      dockerfile: Dockerfile
+    container_name: chatbot-fastapi
+    ports:
+      - "8001:8001"
+    environment:
+      - MODEL_PROVIDER=mock
+      - CHROMA_URL=http://chroma:8000
+      - CHROMA_PERSIST_DIR=/app/chroma_data
+    volumes:
+      - ./fastapi-ingestion/app:/app/app
+      - fastapi_chroma_data:/app/chroma_data
+    depends_on:
+      chroma:
+        condition: service_healthy
+    networks:
+      - chatbot-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      timeout: 10s
+      retries: 5
+
+  # NestJS GraphQL Gateway
+  nestjs-gateway:
+    build:
+      context: ./nestjs-graphql-gateway
+      dockerfile: Dockerfile
+    container_name: chatbot-nestjs
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=mysql://chatbot_user:chatbot_pass@mysql:3306/chatbot
+      - CHROMA_URL=http://chroma:8000
+      - MODEL_PROVIDER=mock
+      - NODE_ENV=production
+    volumes:
+      - ./nestjs-graphql-gateway:/app
+      - /app/node_modules
+    depends_on:
+      mysql:
+        condition: service_healthy
+      fastapi-ingestion:
+        condition: service_healthy
+    networks:
+      - chatbot-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/graphql?query={health}"]
+      timeout: 30s
+      retries: 5
+    command: >
+      sh -c "
+        npx prisma db push &&
+        npx prisma db seed &&
+        node dist/src/main.js
+      "
+
+volumes:
+  mysql_data:
+  chroma_data:
+  fastapi_chroma_data:
+
+networks:
+  chatbot-network:
+    driver: bridge

@@ -1,4 +1,3 @@
-// src/chat/chat.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatSession, MessageConnection, Message } from '../graphql.types';
@@ -10,7 +9,7 @@ export class ChatService {
   private mapPrismaSessionToGraphQL(session: any): ChatSession {
     return {
       ...session,
-      userId: session.userId || undefined, // Convert null to undefined
+      userId: session.userId || undefined,
       messages: session.messages?.map(this.mapPrismaMessageToGraphQL) || [],
       createdAt: session.createdAt.toISOString(),
       updatedAt: session.updatedAt.toISOString(),
@@ -20,7 +19,7 @@ export class ChatService {
   private mapPrismaMessageToGraphQL(message: any): Message {
     return {
       ...message,
-      tokensUsed: message.tokensUsed || undefined, // Convert null to undefined
+      tokensUsed: message.tokensUsed || undefined,
       createdAt: message.createdAt.toISOString(),
     };
   }

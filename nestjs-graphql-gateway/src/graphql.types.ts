@@ -1,7 +1,5 @@
-// src/graphql.types.ts
 import { ObjectType, Field, ID, Float, InputType } from '@nestjs/graphql';
 
-// Base Types
 @ObjectType()
 export class Workspace {
   @Field(() => ID)
@@ -167,7 +165,6 @@ export class IngestResult {
   documents: number;
 }
 
-// Input Types
 @InputType()
 export class CreateBotInput {
   @Field(() => ID)
