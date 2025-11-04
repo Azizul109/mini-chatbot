@@ -15,20 +15,13 @@ A production-ready chatbot builder with RAG capabilities using NestJS GraphQL, F
 ```bash
 # Start MySQL and create database
 mysql -u root -p
-
-# In MySQL console:
-CREATE DATABASE chatbot;
-CREATE USER 'chatbot_user'@'localhost' IDENTIFIED BY 'chatbot_pass';
-GRANT ALL PRIVILEGES ON chatbot.* TO 'chatbot_user'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
 ```
 
 
 ## Test Code
 
 # Check if workspace exists:
-query {
+```query {
   workspace(id: "workspace-1") {
     id
     name
@@ -38,20 +31,20 @@ query {
       modelProvider
     }
   }
-}
+}```
 
 # Check if bot exists:
-query {
+```query {
   bot(id: "bot-1") {
     id
     name
     modelProvider
     modelName
   }
-}
+}```
 
 # Ingest sample documents:
-mutation {
+```mutation {
   ingestDocuments(
     botId: "bot-1"
     input: [
@@ -96,30 +89,30 @@ mutation {
     upsertedEmbeddings
     documents
   }
-}
+}```
 
 # Create a chat session:
-mutation {
+```mutation {
   createSession(botId: "bot-1") {
     id
     botId
     userId
     createdAt
   }
-}
+}```
 
 # Create a chat session:
-mutation {
+```mutation {
   createSession(botId: "bot-1") {
     id
     botId
     userId
     createdAt
   }
-}
+}```
 
 # Sample question:
-mutation {
+```mutation {
   chat(input: {
     sessionId: "cmhkyfjov0001sfa8jqxyq28v",
     message: "What is your customer service number?",
@@ -132,4 +125,4 @@ mutation {
       score
     }
   }
-}
+}```
