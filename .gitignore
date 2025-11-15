@@ -12,7 +12,6 @@ __pycache__/
 # ========================================
 # Dependencies
 nestjs-graphql-gateway/node_modules/
-nestjs-graphql-gateway/
 
 
 # Build output
