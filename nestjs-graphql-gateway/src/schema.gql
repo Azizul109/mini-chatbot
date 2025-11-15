@@ -81,6 +81,7 @@ type Query {
   session(id: String!): ChatSession
   messages(sessionId: String!, limit: Float, cursor: String): MessageConnection!
   health: String!
+  ollamaHealth: String!
 }
 
 type Mutation {

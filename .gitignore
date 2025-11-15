@@ -2,6 +2,7 @@
 # Common Python (FastAPI)
 # ========================================
 fastapi-ingestion/venv/
+fastapi-ingestion/chroma_data/
 __pycache__/
 *.py[cod]
 *$py.class

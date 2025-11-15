@@ -19,8 +19,8 @@ async function main() {
       id: 'bot-1',
       workspaceId: 'workspace-1',
       name: 'Customer Support Bot',
-      modelProvider: 'openai',
-      modelName: 'gpt-4o-mini',
+      modelProvider: 'ollama',
+      modelName: 'llama2.7b',
       temperature: 0.3,
     },
   });

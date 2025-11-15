@@ -59,7 +59,7 @@ model Message {
   id         String   @id @default(cuid())
   sessionId  String
   role       String
-  content    String
+  content    String   @db.Text 
   tokensUsed Int?
   createdAt  DateTime @default(now())
   

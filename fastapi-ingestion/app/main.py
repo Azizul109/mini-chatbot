@@ -1,4 +1,3 @@
-# fastapi-ingestion/app/main.py
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
@@ -7,7 +6,8 @@ import os
 import logging
 from enum import Enum
 import hashlib
-import numpy as np
+import requests
+import json
 
 app = FastAPI(
     title="Ingestion Service",
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class ModelProvider(str, Enum):
     OPENAI = "openai"
-    LLAMA = "llama"
+    OLLAMA = "ollama" 
     MOCK = "mock"
 
 class DocumentInput(BaseModel):
@@ -36,15 +36,13 @@ class IngestionResponse(BaseModel):
     upsertedEmbeddings: int
     documents: int
 
-# Configuration
-MODEL_PROVIDER = os.getenv("MODEL_PROVIDER", "mock")
+MODEL_PROVIDER = os.getenv("MODEL_PROVIDER", "ollama")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 CHROMA_PERSIST_DIR = os.getenv("CHROMA_PERSIST_DIR", "./chroma_data")
 
-# Create chroma data directory if it doesn't exist
 os.makedirs(CHROMA_PERSIST_DIR, exist_ok=True)
 
-# Initialize Chroma with persistence
 chroma_client = chromadb.PersistentClient(path=CHROMA_PERSIST_DIR)
 
 def chunk_text(text: str, chunk_size: int, overlap: int) -> List[str]:
@@ -62,19 +60,41 @@ def chunk_text(text: str, chunk_size: int, overlap: int) -> List[str]:
     
     return chunks
 
-def simple_text_embedding(text: str) -> List[float]:
-    """Create a simple embedding based on character frequencies."""
-    # Create a simple 384-dimensional embedding
+def get_ollama_embeddings(texts: List[str], model: str = "nomic-embed-text") -> List[List[float]]:
+    """Get embeddings using Ollama local models."""
+    embeddings = []
+    
+    for text in texts:
+        try:
+            response = requests.post(
+                f"{OLLAMA_BASE_URL}/api/embeddings",
+                json={
+                    "model": model,
+                    "prompt": text
+                },
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                embedding_data = response.json()
+                embeddings.append(embedding_data["embedding"])
+                logger.debug(f"Successfully generated embedding for text of length {len(text)}")
+            else:
+                logger.warning(f"Ollama embedding failed with status {response.status_code}: {response.text}")
+                embeddings.append(create_simple_embedding(text))
+                
+        except Exception as e:
+            logger.error(f"Ollama embedding error: {e}")
+            embeddings.append(create_simple_embedding(text))
+    
+    return embeddings
+
+def create_simple_embedding(text: str) -> List[float]:
+    """Create a simple embedding as fallback."""
     embedding = [0.0] * 384
-    
-    # Use character distribution to create a deterministic embedding
-    for i, char in enumerate(text[:384]):  # Use first 384 characters
-        embedding[i] = (ord(char) % 100) / 100.0  # Normalize to 0-1
-    
-    # Add some document-level features
-    text_length = len(text)
-    embedding[0] = min(text_length / 1000.0, 1.0)  # Normalized length
-    
+    for i, char in enumerate(text[:384]):
+        embedding[i] = (ord(char) % 100) / 100.0
+    embedding[0] = min(len(text) / 1000.0, 1.0)
     return embedding
 
 def get_embeddings(texts: List[str]) -> List[List[float]]:
@@ -83,8 +103,8 @@ def get_embeddings(texts: List[str]) -> List[List[float]]:
         if MODEL_PROVIDER == ModelProvider.OPENAI:
             import openai
             if not OPENAI_API_KEY:
-                logger.warning("OPENAI_API_KEY not set, using mock embeddings")
-                return [simple_text_embedding(text) for text in texts]
+                logger.warning("OPENAI_API_KEY not set, using Ollama embeddings")
+                return get_ollama_embeddings(texts)
             
             response = openai.embeddings.create(
                 model="text-embedding-3-small",
@@ -92,27 +112,24 @@ def get_embeddings(texts: List[str]) -> List[List[float]]:
             )
             return [data.embedding for data in response.data]
         
-        elif MODEL_PROVIDER == ModelProvider.LLAMA:
-            # For Llama, use simple embeddings for now
-            logger.info("Using simple embeddings for Llama provider")
-            return [simple_text_embedding(text) for text in texts]
+        elif MODEL_PROVIDER == ModelProvider.OLLAMA:
+            logger.info(f"Using Ollama for embeddings with {len(texts)} texts")
+            return get_ollama_embeddings(texts)
         
-        else:  # Mock embeddings
+        else: 
             logger.info("Using simple mock embeddings")
-            return [simple_text_embedding(text) for text in texts]
+            return [create_simple_embedding(text) for text in texts]
     
     except Exception as e:
         logger.error(f"Embedding generation failed: {str(e)}")
         logger.info("Falling back to simple embeddings")
-        # Return simple embeddings as fallback
-        return [simple_text_embedding(text) for text in texts]
+        return [create_simple_embedding(text) for text in texts]
 
 @app.post("/ingest", response_model=IngestionResponse)
 async def ingest_documents(request: IngestionRequest):
     try:
         collection_name = f"bot_{request.botId}"
         
-        # Get or create collection
         try:
             collection = chroma_client.get_collection(collection_name)
             logger.info(f"Using existing collection: {collection_name}")
@@ -140,15 +157,13 @@ async def ingest_documents(request: IngestionRequest):
                     "document_index": doc_idx,
                     "chunk_size": len(chunk)
                 })
-                # Generate unique ID
                 chunk_id = hashlib.md5(f"{document.filename}_{chunk_idx}_{request.botId}".encode()).hexdigest()
                 all_ids.append(chunk_id)
         
-        logger.info(f"Generating embeddings for {len(all_chunks)} chunks...")
-        # Get embeddings
+        logger.info(f"Generating embeddings for {len(all_chunks)} chunks using {MODEL_PROVIDER}...")
+        
         embeddings = get_embeddings(all_chunks)
         
-        # Upsert to Chroma
         logger.info(f"Upserting {len(all_chunks)} chunks to Chroma...")
         collection.upsert(
             embeddings=embeddings,
@@ -171,20 +186,31 @@ async def ingest_documents(request: IngestionRequest):
 
 @app.get("/health")
 async def health_check():
+    ollama_status = "unknown"
+    try:
+        response = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=5)
+        ollama_status = "healthy" if response.status_code == 200 else "unhealthy"
+    except:
+        ollama_status = "unreachable"
+    
     return {
         "status": "healthy", 
         "model_provider": MODEL_PROVIDER,
-        "service": "fastapi-ingestion",
-        "chroma_persist_dir": CHROMA_PERSIST_DIR
+        "ollama_status": ollama_status,
+        "service": "fastapi-ingestion"
     }
 
-@app.get("/")
-async def root():
-    return {
-        "message": "FastAPI Ingestion Service is running",
-        "docs": "/docs",
-        "health": "/health"
-    }
+@app.get("/ollama/models")
+async def get_ollama_models():
+    """Endpoint to check available Ollama models."""
+    try:
+        response = requests.get(f"{OLLAMA_BASE_URL}/api/tags", timeout=5)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {"error": "Failed to fetch models"}
+    except Exception as e:
+        return {"error": str(e)}
 
 if __name__ == "__main__":
     import uvicorn

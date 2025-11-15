@@ -9,6 +9,10 @@ A production-ready chatbot builder with RAG capabilities using NestJS GraphQL, F
 - Node.js 18+
 - Python 3.8+
 - MySQL 8.0+
+- Ollama - for local LLM and embeddings
+- ChromaDB - for vector storage
+- FastAPI - for ingestion service
+- NestJS - for GraphQL API
 
 ### 1. Database Setup
 
@@ -16,6 +20,27 @@ A production-ready chatbot builder with RAG capabilities using NestJS GraphQL, F
 # Start MySQL and create database
 mysql -u root -p
 ```
+
+### 1. Project Setup
+
+*** backend
+* If local windows/linux have docker than run 'docker compose up' to setup
+* For docker change mysql user and password based on your system 
+* Go to ./nestjs-graphql-gateway and run 'npm install'
+* Need to setup database manually then run 'npm run setup:db'
+* Dowload Ollama from the website 'https://ollama.ai/'
+* Download Ollama model like 'llama2:7b' or 'mistral:7b'. (I am using 'llama2:7b')
+* Then after installing all dependency run 'ollama pull llama2:7b'
+* Finally run 'npm run start:dev'
+
+*** frontend
+* If no docker than first go to ./fastapi-ingestion and 'python -m venv venv' to create virtual env
+* After creating virtual env activate it 'source venv/bin/activate'
+* After that run 'pip install -r requirements.txt'
+* Dowload Ollama from the website 'https://ollama.ai/'
+* Download Ollama model like 'llama2:7b' or 'mistral:7b'. (I am using 'llama2:7b')
+* Then pull this 'ollama pull nomic-embed-text'
+* Finally run 'uvicorn app.main:app --reload --port 8001'
 
 
 ## Test Code

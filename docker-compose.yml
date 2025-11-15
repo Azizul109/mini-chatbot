@@ -9,8 +9,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: chatbot
-      MYSQL_USER: chatbot_user
-      MYSQL_PASSWORD: chatbot_pass
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 
     ports:
       - "3306:3306"
     volumes:
@@ -76,9 +76,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=mysql://chatbot_user:chatbot_pass@mysql:3306/chatbot
+      - DATABASE_URL=mysql://root@mysql:3306/chatbot
       - CHROMA_URL=http://chroma:8000
-      - MODEL_PROVIDER=mock
+      - MODEL_PROVIDER=ollama
       - NODE_ENV=production
     volumes:
       - ./nestjs-graphql-gateway:/app

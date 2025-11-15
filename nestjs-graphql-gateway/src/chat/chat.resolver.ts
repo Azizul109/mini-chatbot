@@ -95,4 +95,18 @@ export class ChatResolver {
   health(): string {
     return 'OK';
   }
+
+  @Query(() => String, { name: 'ollamaHealth' })
+  async ollamaHealth(): Promise<string> {
+    try {
+      const llmProvider = (this.ragService as any).llmProvider;
+      if (llmProvider && llmProvider.healthCheck) {
+        const health = await llmProvider.healthCheck();
+        return JSON.stringify(health, null, 2);
+      }
+      return 'Ollama provider not available or health check not supported';
+    } catch (error: any) {
+      return `Ollama health check failed: ${error.message}`;
+    }
+  }
 }
